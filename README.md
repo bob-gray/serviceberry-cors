@@ -1,7 +1,9 @@
 serviceberry-cors
 =================
 
-CORS plugin for [Serviceberry](https://serviceberry.js.org).
+CORS plugin for [Serviceberry](https://serviceberry.js.org). For information on
+Cross-Origin Resource Sharing check out this [article](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+on MDN.
 
 Install
 -------
@@ -14,23 +16,24 @@ Usage
 -----
 
 This plugin sets `Access-Control-` response headers telling browsers what is
-allowed when cross origin requests are made.
+allowed when cross-origin requests are made. Forbidden cross-origin requests
+are denied with a `403 Forbidden` response.
 
-**without options**
+*without options*
 ```javascript
 const cors = require("serviceberry-cors");
 
 trunk.use(cors());                      // Access-Control-Allow-Origin: *
 ```
 
-**with origin**
+*with origin*
 ```javascript
 const cors = require("serviceberry-cors");
 
 trunk.use(cors("https://example.com")); // Access-Control-Allow-Origin: https://example.com
 ```
 
-**with options**
+*with options*
 ```javascript
 const cors = require("serviceberry-cors");
 
@@ -40,10 +43,10 @@ trunk.use(cors({
     credentials: true,                  // requests can be made with credentials
     requestHeaders: [                   // requests can be made with these headers
         "X-Foo"
-	],
+    ],
     responseHeaders: [                  // responses can include these headers
         "X-Baz"
-	],
+    ],
     methods: [                          // requests can be made with these methods
         "GET",
         "PUT"
@@ -80,19 +83,25 @@ Options
 
 	By default this header will not be sent.
 
-  - **requestHeaders** *array*
+  - **requestHeaders** *array* [optional]
+
+    `Access-Control-Allow-Headers`
 
     Whitelist of request headers that may be used beyond the CORS safe list.
 
 	By default this header will not be sent.
 
-  - **responseHeaders** *array*
+  - **responseHeaders** *array* [optional]
+
+    `Access-Control-Expose-Headers`
 
     Whitelist of response headers that are safe for use by the requesting origin.
 
 	By default this header will not be sent.
 
-  - **methods** *array*
+  - **methods** *array* [optional]
+
+    `Access-Control-Allow-Methods`
 
     Whitelist of request methods that may be used to make a request.
 
@@ -181,7 +190,7 @@ Returns the value to be used for the `Access-Control-Allow-Methods`.
 
 ### setAccessControlHeaders (allowOrigin, request, response)
 
-Determines what headers to set and their values and sets them. 
+Determines what headers to set and their values and sets them.
 
   - **allowOrigin** *string*
 
