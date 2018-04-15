@@ -111,9 +111,10 @@ AccessControl
 -------------
 
 `serviceberry-cors` exports a static factory method for creating an instance of
-the `AccessControl` class that serves as the Serviceberry handlers. The class
-can be accessed directly at `cors.AccessControl` if you wish to extend it. Some
-methods of interest are listed below.
+the `AccessControl` class that serves as the Serviceberry handler. The class
+can be accessed directly at `cors.AccessControl` if you wish to extend it. One
+use case for extending `AccessControl` could be for dynamic header values beyond
+`Access-Control-Allow-Origin`. Some methods of interest are listed below.
 
 ### constructor ([origins])
 
