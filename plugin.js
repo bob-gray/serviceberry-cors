@@ -2,8 +2,9 @@
 
 const vary = require("vary"),
 	escape = require("escape-string-regexp"),
+	{HttpError} = require("serviceberry"),
 	wildcard = "*",
-	defaulOptions = {
+	defaultOptions = {
 		origins: wildcard,
 		maxAge: NaN,
 		credentials: false,
@@ -18,17 +19,7 @@ class AccessControl {
 	}
 
 	constructor (options = wildcard) {
-		if (options === wildcard || Array.isArray(options)) {
-			options = {
-				origins: options.slice()
-			};
-		} else if (typeof options === "string") {
-			options = {
-				origins: [options]
-			};
-		}
-
-		Object.assign(this, {...defaultOptions, ...options});
+		this.setOptions(options);
 
 		if (this.options.origins !== wildcard) {
 			this.createOriginMatcher();
@@ -48,19 +39,35 @@ class AccessControl {
 	}
 
 	use (request, response) {
-		const allowOrigin = this.getAllowOrigin(request);
+		const origin = request.getHeader("Origin"),
+			allowOrigin = this.getAllowOrigin(request);
 
-		if (allowOrigin) {
-			this.setAccessControlHeaders(allowOrigin, request, response);
+		if (origin && !allowOrigin) {
+			throw new HttpError("Cross-origin access denied.", "Forbidden");
 		}
 
+		this.setAccessControlHeaders(allowOrigin, request, response);
 		request.proceed();
+	}
+
+	setOptions (options) {
+		if (options === wildcard || Array.isArray(options)) {
+			options = {
+				origins: options.slice()
+			};
+		} else if (typeof options === "string") {
+			options = {
+				origins: [options]
+			};
+		}
+
+		Object.assign(this, {...defaultOptions, ...options});
 	}
 
 	createOriginMatcher () {
 		const pattern = this.options.origins.map(toPatterns).join("|");
 
-		this.originMatcher = new Regexp("^(?:" + pattern + ")$");
+		this.originMatcher = new RegExp("^(?:" + pattern + ")$");
 	}
 
 	getAllowOrigin (request) {
@@ -83,6 +90,7 @@ class AccessControl {
 		return allowOrigin;
 	}
 
+	// eslint-disable-next-line complexity
 	setAccessControlHeaders (allowOrigin, request, response) {
 		const preflight = request.getMethod() === "OPTIONS",
 			maxAge = this.getMaxAge(request),
