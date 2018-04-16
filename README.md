@@ -1,6 +1,11 @@
 serviceberry-cors
 =================
 
+[![CircleCI](https://circleci.com/gh/bob-gray/serviceberry-cors.svg?style=svg)](https://circleci.com/gh/bob-gray/serviceberry-cors)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/5a4fc498c6e90455f103/test_coverage)](https://codeclimate.com/github/bob-gray/serviceberry-cors/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/5a4fc498c6e90455f103/maintainability)](https://codeclimate.com/github/bob-gray/serviceberry-cors/maintainability)
+[![npm version](https://badge.fury.io/js/serviceberry-cors.svg)](https://badge.fury.io/js/serviceberry-cors)
+
 CORS plugin for [Serviceberry](https://serviceberry.js.org). For information on
 Cross-Origin Resource Sharing check out this [article](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 on MDN.
