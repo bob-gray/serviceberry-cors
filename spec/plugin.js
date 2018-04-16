@@ -38,6 +38,14 @@ describe("serviceberry-cors", () => {
 		expect(response.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "https://www.foo.com");
 	});
 
+	it("should set Vary header with origin is not *", () => {
+		handler = cors("https://www.foo.com");
+
+		handler.use(request, response);
+
+		expect(response.setHeader).toHaveBeenCalledWith("Vary", "Origin");
+	});
+
 	it("should set Access-Control-Allow-Origin with origin array as options and wildcard", () => {
 		handler = cors(["https://*.foo.com", "https://other.io"]);
 
