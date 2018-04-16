@@ -15,7 +15,7 @@ npm install serviceberry-cors
 Usage
 -----
 
-This plugin sets `Access-Control-` response headers telling browsers what is
+This plugin sets `Access-Control-` response headers describing what is
 allowed when cross-origin requests are made. Forbidden cross-origin requests
 are denied with a `403 Forbidden` response.
 
@@ -38,7 +38,7 @@ trunk.use(cors("https://example.com")); // Access-Control-Allow-Origin: https://
 const cors = require("serviceberry-cors");
 
 trunk.use(cors({
-    origins: "https://*example.com",    // includes all subdomains including none
+    origins: "https://*example.com",    // includes all subdomains and apex domain
     maxAge: 86400,                      // cache the preflight request for a day
     credentials: true,                  // requests can be made with credentials
     requestHeaders: [                   // requests can be made with these headers
@@ -62,8 +62,17 @@ Options
 
     A whitelist of origins or a single origin. Can be an asterisk `*` to be sent
 	literally telling the client all origins. Can optionally include an asterisk
-	`*` within
-     an origin to mean *any* subdomain and/or *any* protocol.
+	`*` within an origin to mean *any* subdomain and/or *any* protocol.
+
+      - `*.foo.com` matches `http` or `https` and any subdomain of `foo.com` but
+        not `foo.com` as an apex (bare) domain.
+
+      - `https://*foo.com` matches only `https` and any subdomains of `foo.com`
+        including the apex (bare) domain. **notice there is no dot `.` after the
+        asterisk `*`**
+
+      - `*://foo.com` matches `http` or `https` and only the apex (bare) domain
+        without a subdomain.
 
 	Defaults to `*`
 
@@ -135,11 +144,11 @@ Serviceberry handler method.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
   - **response** *object*
 
-    Serviceberry resposne object.
+    Serviceberry [response](https://serviceberry.js.org/docs/response.html) object.
 
 ### getAllowOrigin (request)
 
@@ -148,7 +157,7 @@ value will be used to determine whether Access-Controls headers are needed.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
 ### getMaxAge (request)
 
@@ -156,7 +165,7 @@ Returns the value to be used for the `Access-Control-Max-Age` header.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
 ### getAllowCredentials (request)
 
@@ -164,7 +173,7 @@ Returns the value to be used for the `Access-Control-Allow-Credentials`.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
 ### getAllowHeaders (request)
 
@@ -172,7 +181,7 @@ Returns the value to be used for the `Access-Control-Allow-Headers`.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
 ### getExposeHeaders (request)
 
@@ -180,7 +189,7 @@ Returns the value to be used for the `Access-Control-Expose-Headers`.
 
   - **request** *object*
 
-    Serviceberry request object
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
 ### getAllowMethods (request)
 
@@ -188,7 +197,7 @@ Returns the value to be used for the `Access-Control-Allow-Methods`.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
 ### setAccessControlHeaders (allowOrigin, request, response)
 
@@ -200,8 +209,8 @@ Determines what headers to set and their values and sets them.
 
   - **request** *object*
 
-    Serviceberry request object.
+    Serviceberry [request](https://serviceberry.js.org/docs/request.html) object.
 
   - **response** *object*
 
-    Serviceberry resposne object.
+    Serviceberry [response](https://serviceberry.js.org/docs/response.html) object.
