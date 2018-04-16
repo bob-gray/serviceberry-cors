@@ -27,17 +27,9 @@ class AccessControl {
 			this.createOriginMatcher();
 		}
 
-		if (this.options.requestHeaders.length) {
-			this.allowHeaders = this.options.requestHeaders.join(", ");
-		}
-
-		if (this.options.responseHeaders.length) {
-			this.exposeHeaders = this.options.responseHeaders.join(", ");
-		}
-
-		if (this.options.methods.length) {
-			this.allowMethods = this.options.methods.join(", ");
-		}
+		this.allowHeaders = this.options.requestHeaders.join(", ");
+		this.exposeHeaders = this.options.responseHeaders.join(", ");
+		this.allowMethods = this.options.methods.join(", ");
 	}
 
 	use (request, response) {
@@ -93,14 +85,8 @@ class AccessControl {
 		return allowOrigin;
 	}
 
-	// eslint-disable-next-line complexity
 	setAccessControlHeaders (allowOrigin, request, response) {
-		const preflight = request.getMethod() === "OPTIONS",
-			maxAge = this.getMaxAge(request),
-			allowCredentials = this.getAllowCredentials(request),
-			allowHeaders = this.getAllowHeaders(request),
-			exposeHeaders = this.getExposeHeaders(request),
-			allowMethods = this.getAllowMethods(request);
+		const preflight = request.getMethod() === "OPTIONS";
 
 		response.setHeader("Access-Control-Allow-Origin", allowOrigin);
 
@@ -108,24 +94,13 @@ class AccessControl {
 			vary(response, "Origin");
 		}
 
-		if (preflight && !isNaN(maxAge)) {
-			response.setHeader("Access-Control-Max-Age", maxAge);
-		}
+		this.setAllowCredentialsHeader(request, response);
+		this.setExposeHeadersHeader(request, response);
 
-		if (allowCredentials) {
-			response.setHeader("Access-Control-Allow-Credentials", allowCredentials);
-		}
-
-		if (preflight && allowHeaders) {
-			response.setHeader("Access-Control-Allow-Headers", allowHeaders);
-		}
-
-		if (exposeHeaders) {
-			response.setHeader("Access-Control-Expose-Headers", exposeHeaders);
-		}
-
-		if (preflight && allowMethods) {
-			response.setHeader("Access-Control-Allow-Methods", allowMethods);
+		if (preflight) {
+			this.setMaxAgeHeader(request, response);
+			this.setAllowHeadersHeader(request, response);
+			this.setAllowMethodsHeader(request, response);
 		}
 	}
 
@@ -147,6 +122,46 @@ class AccessControl {
 
 	getAllowMethods (request) {
 		return this.allowMethods || request.getAllowedMethods();
+	}
+
+	setMaxAgeHeader (request, response) {
+		const maxAge = this.getMaxAge(request);
+
+		if (!isNaN(maxAge)) {
+			response.setHeader("Access-Control-Max-Age", maxAge);
+		}
+	}
+
+	setAllowCredentialsHeader (request, response) {
+		const allowCredentials = this.getAllowCredentials(request);
+
+		if (allowCredentials) {
+			response.setHeader("Access-Control-Allow-Credentials", allowCredentials);
+		}
+	}
+
+	setAllowHeadersHeader (request, response) {
+		const allowHeaders = this.getAllowHeaders(request);
+
+		if (allowHeaders) {
+			response.setHeader("Access-Control-Allow-Headers", allowHeaders);
+		}
+	}
+
+	setExposeHeadersHeader (request, response) {
+		const exposeHeaders = this.getExposeHeaders(request);
+
+		if (exposeHeaders) {
+			response.setHeader("Access-Control-Expose-Headers", exposeHeaders);
+		}
+	}
+
+	setAllowMethodsHeader (request, response) {
+		const allowMethods = this.getAllowMethods(request);
+
+		if (allowMethods) {
+			response.setHeader("Access-Control-Allow-Methods", allowMethods);
+		}
 	}
 }
 
