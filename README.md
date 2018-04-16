@@ -62,7 +62,8 @@ Options
 
     A whitelist of origins or a single origin. Can be an asterisk `*` to be sent
 	literally telling the client all origins. Can optionally include an asterisk
-	`*` with an origin to mean *any* subdomain and/or *any* protocol.
+	`*` within
+     an origin to mean *any* subdomain and/or *any* protocol.
 
 	Defaults to `*`
 

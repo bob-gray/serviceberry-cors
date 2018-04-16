@@ -4,6 +4,8 @@ const vary = require("vary"),
 	escape = require("escape-string-regexp"),
 	{HttpError} = require("serviceberry"),
 	wildcard = "*",
+	wildcardDot = /\*\./,
+	protocol = /^https?:\/\//,
 	defaultOptions = {
 		origins: wildcard,
 		maxAge: NaN,
@@ -21,28 +23,29 @@ class AccessControl {
 	constructor (options = wildcard) {
 		this.setOptions(options);
 
-		if (this.options.origins !== wildcard) {
+		if (this.options.origins[0] !== wildcard) {
 			this.createOriginMatcher();
 		}
 
-		if (this.options.requestHeaders) {
+		if (this.options.requestHeaders.length) {
 			this.allowHeaders = this.options.requestHeaders.join(", ");
 		}
 
-		if (this.options.responseHeaders) {
+		if (this.options.responseHeaders.length) {
 			this.exposeHeaders = this.options.responseHeaders.join(", ");
 		}
 
-		if (this.options.methods) {
+		if (this.options.methods.length) {
 			this.allowMethods = this.options.methods.join(", ");
 		}
 	}
 
 	use (request, response) {
-		const origin = request.getHeader("Origin"),
+		const host = request.getHost(),
+			origin = request.getHeader("Origin"),
 			allowOrigin = this.getAllowOrigin(request);
 
-		if (origin && !allowOrigin) {
+		if (origin && !allowOrigin && host !== origin.replace(protocol, "")) {
 			throw new HttpError("Cross-origin access denied.", "Forbidden");
 		}
 
@@ -51,17 +54,17 @@ class AccessControl {
 	}
 
 	setOptions (options) {
-		if (options === wildcard || Array.isArray(options)) {
+		if (typeof options === "string" || Array.isArray(options)) {
 			options = {
 				origins: options.slice()
 			};
-		} else if (typeof options === "string") {
-			options = {
-				origins: [options]
-			};
 		}
 
-		Object.assign(this, {...defaultOptions, ...options});
+		if (typeof options.origins === "string") {
+			options.origins = [options.origins];
+		}
+
+		this.options = {...defaultOptions, ...options};
 	}
 
 	createOriginMatcher () {
@@ -76,7 +79,7 @@ class AccessControl {
 			match;
 
 		if (this.originMatcher) {
-			match = this.originMatcher(origin);
+			match = origin.match(this.originMatcher);
 		} else if (this.options.credentials) {
 			allowOrigin = origin;
 		} else {
@@ -84,7 +87,7 @@ class AccessControl {
 		}
 
 		if (match) {
-			allowOrigin = match.unshift();
+			allowOrigin = match[0];
 		}
 
 		return allowOrigin;
@@ -143,12 +146,20 @@ class AccessControl {
 	}
 
 	getAllowMethods (request) {
-		return this.allowMethods || request.getAllowMethods();
+		return this.allowMethods || request.getAllowedMethods();
 	}
 }
 
 function toPatterns (origin) {
-	return origin.split(wildcard).map(escape).join(".*\\b");
+	var pattern;
+
+	if (origin.match(wildcardDot)) {
+		pattern = origin.split(wildcardDot).map(escape).join(".+");
+	} else {
+		pattern = origin.split(wildcard).map(escape).join("(?:.+\\.)?");
+	}
+
+	return pattern;
 }
 
 module.exports = AccessControl.create;

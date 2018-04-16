@@ -4,8 +4,11 @@
   "description": "A CORS plugin for Serviceberry",
   "main": "plugin.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint plugin.js"
+    "build": "npm run lint && npm run test-coverage",
+    "lint": "eslint src/**",
+    "lint:spec": "eslint spec/**",
+    "test": "jasmine",
+    "test-coverage": "nyc --include=plugin.js --reporter=lcov --reporter=text npm test"
   },
   "repository": {
     "type": "git",
@@ -34,6 +37,11 @@
     "vary": "^1.1.2"
   },
   "devDependencies": {
-    "eslint": "^4.19.1"
+    "eslint": "^4.19.1",
+    "jasmine": "^3.1.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "node-mocks-http": "^1.5.8",
+    "nyc": "^11.6.0",
+    "serviceberry": "^0.2.1"
   }
 }
