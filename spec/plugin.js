@@ -54,7 +54,7 @@ describe("serviceberry-cors", () => {
 		expect(response.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "https://www.foo.com");
 	});
 
-	it("should set Access-Control-Allow-Origin with origin object as options and wildcard for protocol", () => {
+	it("should set Access-Control-Allow-Origin with options object and wildcard for domain and protocol", () => {
 		handler = cors({
 			origins: "*.foo.com",
 			maxAge: 60
@@ -63,6 +63,18 @@ describe("serviceberry-cors", () => {
 		handler.use(request, response);
 
 		expect(response.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "https://www.foo.com");
+	});
+
+	it("should set Access-Control-Allow-Origin with origin as options and wildcard for protocol", () => {
+		request = createRequest("GET", {
+			Origin: "http://foo.com"
+		});
+
+		handler = cors("*://foo.com");
+
+		handler.use(request, response);
+
+		expect(response.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "http://foo.com");
 	});
 
 	it("should set Access-Control-Allow-Origin with apex domain and wildcard", () => {
@@ -86,8 +98,10 @@ describe("serviceberry-cors", () => {
 		});
 
 		handler = cors({
-			origins: "https://*.foo.com",
-			maxAge: 60
+			origins: [
+				"https://*.foo.com",
+				"*example.com"
+			]
 		});
 
 		expect(handler.use.bind(handler, request, response)).toThrowError(HttpError, "Cross-origin access denied.");
@@ -100,6 +114,18 @@ describe("serviceberry-cors", () => {
 
 		handler = cors({
 			origins: "*foo.com"
+		});
+
+		expect(handler.use.bind(handler, request, response)).toThrowError(HttpError, "Cross-origin access denied.");
+	});
+
+	it("should throw with an origin that is similar to allowd origin with wildcard", () => {
+		request = createRequest("GET", {
+			Origin: "https://evil-foo.com"
+		});
+
+		handler = cors({
+			origins: "*.foo.com"
 		});
 
 		expect(handler.use.bind(handler, request, response)).toThrowError(HttpError, "Cross-origin access denied.");

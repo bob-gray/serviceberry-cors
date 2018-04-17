@@ -4,7 +4,8 @@ const vary = require("vary"),
 	escape = require("escape-string-regexp"),
 	{HttpError} = require("serviceberry"),
 	wildcard = "*",
-	wildcardDot = /\*\./,
+	wildcardAndDot = wildcard + ".",
+	wildcardAndColon = wildcard + ":",
 	protocol = /^https?:\/\//,
 	defaultOptions = {
 		origins: wildcard,
@@ -166,15 +167,21 @@ class AccessControl {
 }
 
 function toPatterns (origin) {
-	var pattern;
+	var replacement,
+		anySubdomain = ".+",
+		httpOrHttps = "s?",
+		apexOrSubdomain = "(?:.+\\.)?";
 
-	if (origin.match(wildcardDot)) {
-		pattern = origin.split(wildcardDot).map(escape).join(".+");
+	if (origin.includes(wildcardAndDot)) {
+		replacement = anySubdomain;
+	} else if (origin.includes(wildcardAndColon)) {
+		replacement = httpOrHttps;
+		origin = "http" + origin;
 	} else {
-		pattern = origin.split(wildcard).map(escape).join("(?:.+\\.)?");
+		replacement = apexOrSubdomain;
 	}
 
-	return pattern;
+	return origin.split(wildcard).map(escape).join(replacement);
 }
 
 module.exports = AccessControl.create;
