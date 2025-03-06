@@ -216,7 +216,7 @@ describe("serviceberry-cors", () => {
 		expect(response.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Methods", allowed);
 	});
 
-	it("should not set preflight headers for a non preflight (OPTONS) request", () => {
+	it("should not set preflight headers for a non preflight (OPTIONS) request", () => {
 		request = createRequest("GET");
 
 		handler = cors({
@@ -227,8 +227,6 @@ describe("serviceberry-cors", () => {
 			allowMethods: [
 				"GET",
 				"HEAD",
-				"PUT",
-				"DELETE",
 				"OPTIONS"
 			]
 		});
@@ -237,7 +235,7 @@ describe("serviceberry-cors", () => {
 
 		expect(response.setHeader).not.toHaveBeenCalledWith("Access-Control-Max-Age", 3600);
 		expect(response.setHeader).not.toHaveBeenCalledWith("Access-Control-Allow-Headers", "X-Baz");
-		expect(response.setHeader).not.toHaveBeenCalledWith("Access-Control-Allow-Methods", "GET, HEAD, PUT, DELETE, OPTIONS");
+		expect(response.setHeader).not.toHaveBeenCalledWith("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
 	});
 });
 
@@ -246,27 +244,36 @@ function createRequest (
 	headers = {
 		host: "www.example.com",
 		origin: "https://www.foo.com"
-	}) {
-	var incomingMessage = httpMocks.createRequest({
-			method: method,
-			url: "/",
-			headers: headers
-		}),
-		request;
+	}
+) {
+	const request = new Request(httpMocks.createRequest({
+		method: method,
+		url: "/",
+		headers: headers,
+		connection: {
+			encrypted: true
+		},
+		incomingMessage: Function.prototype
+	}));
 
+	return new Proxy(request, {
+		get (target, name, receiver) {
+			var value;
 
-	incomingMessage.setEncoding = Function.prototype;
-	request = new Request(incomingMessage);
-	request.proceed = jasmine.createSpy("request.proceed");
+			if (name === "proceed") {
+				value = jasmine.createSpy("request.proceed");
+			} else {
+				value = Reflect.get(target, name, receiver);
+			}
 
-	return request;
+			return value;
+		}
+	});
 }
 
 function createResponse () {
-	var response = jasmine.createSpyObj("Response", [
+	return jasmine.createSpyObj("Response", [
 		"setHeader",
 		"getHeader"
 	]);
-
-	return response;
 }
